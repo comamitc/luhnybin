@@ -1,7 +1,12 @@
-// some test numbers
-// 9875610591081018250321
-// 56613959932535089
-// 56613959932537
+/*
+	optimization needed when allocating the arrays and strings
+	'BUFFER' creates a bit of overhead
+
+	some test numbers
+	9875610591081018250321
+	56613959932535089
+	56613959932537
+*/
 
 #include <stdio.h>
 #include <string.h>
@@ -18,26 +23,23 @@ int ctoi(char c);
 
 int main (void)
 {
-	
 	char str[BUFFER];
 	char c;	
 	while (1){
-		
 		int j = 0;
-		while ((c = getchar()) != '\n')
-		{
+		while ((c = getchar()) != '\n'){
 			str[j++] = c;
 		}
 		str[j] = '\0';
 
 		int len = strlen(str);
 		looney(str, len);
-		
 		printf("%s\n", str);
 		fflush(stdout);
 	}
 	return 0;
 }
+
 
 void looney(char cc[], int len)
 {
@@ -45,81 +47,60 @@ void looney(char cc[], int len)
 	int digits[BUFFER];
 	
 	//convert all numbers to ints
-	while (j >= 0)
-	{
+	while (j >= 0){
 		char dchar = cc[j];
-		if (dchar <= '9' && dchar >= '0')
-		{
-					
+		if (dchar <= '9' && dchar >= '0'){		
 			matches[i] = j--;
 			digits[i++] = ctoi(dchar);
 			
 			//once we record at least 14 numbers
-			//lets check the math
-			if (i >= 14)
-			{
+			if (i >= 14){
 				int tmax;
 				tmax =  isdeca(digits, i);
-				if (tmax >= max)
-				{
+				if (tmax >= max){
 					max = tmax;
 					start_ind = (i - 1);
-					if (max > 0)
-					{
+					if (max > 0){
 						int idx = start_ind;
-						while ((start_ind - idx) < max)
-						{
-								cc[matches[idx--]] = 'X';
+						while ((start_ind - idx) < max){
+							cc[matches[idx--]] = 'X';
 						}
 					}
 				}
 			}
-		}
-		else { j--; } //need to index down even if none number
-		
+		} else { j--; } //need to index down even if none number
 	}
 }
 
+
 int isdeca(int d[], int i)
 {
-	
 	int depth = MINSIZE,  max_seq = 0;
-	while (depth <= MAXSIZE && depth <= i)
-	{
+	while (depth <= MAXSIZE && depth <= i) {
 		int sum = 0, iter = i, lower = (i - depth), j = 0;
-		
-		while (iter > lower)
-		{		
-			
+		while (iter > lower) {	
 			int num;
-			if ((j % 2) != 0)
-			{
+			if ((j % 2) != 0) {
 				num = d[lower] << 1;
-			}
-			else
-			{
+			} else {
 				num = d[lower];
 			}
-			if (num > 9)
-			{
+			
+			if (num > 9) {
 				//double digit num
 				int second = num % 10;
 				int first = num / 10;
 				sum += (first + second);			
-			}
-			else
-			{
+			} else {
 				//single digit num
 				sum += num;
 			}
 			lower++;
 			j++;
 		}
-		if ((sum % 10) == 0)
-		{
+		if ((sum % 10) == 0) {
 			max_seq = depth;
 		}
-		
 		depth++;
 	}
 	return max_seq;
