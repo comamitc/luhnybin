@@ -7,19 +7,20 @@
 	56613959932535089
 	56613959932537
 */
-
 #include <stdio.h>
 #include <string.h>
 
 #define MAXSIZE 16
 #define MINSIZE 14
 #define BUFFER 1024
+#define SMALLBUFFER 25
 
-int matches[BUFFER];
+int matches[SMALLBUFFER];
 
-void looney(char cc[], int len);
-int isdeca(int d[], int i);
+void build_case(char cc[], int len);
+int looney(int d[], int i);
 int ctoi(char c);
+
 
 int main (void)
 {
@@ -38,76 +39,91 @@ int main (void)
 		str[j] = '\0';
 
 		len = strlen(str);
-		looney(str, len);
+		build_case(str, len);
 		printf("%s\n", str);
 		fflush(stdout);
 	}
 	return 0;
 }
 
-
-void looney(char cc[], int len)
+/*
+		Iterate through the string detecting digits
+		if 14+ digits are found, see if they pass the Luhn Algorithm
+		if they do, iterate up to a range of 16 (if possible)
+		mask as things are found to match the pattern that way a 1,000 character
+		string that matches the alg tests gets masked entirely in 16 character sets
+*/
+void build_case(char cc[], int len)
 {
-	int j = (len - 1), i = 0, max = 0, start_ind = 0, tmax = 0, idx = 0;
+	int j = (len - 1), i = 0, max = 0, start_ind = 0, temp_max = 0, idx = 0;
 	int digits[BUFFER];
 	
 	//convert all numbers to ints
 	while (j >= 0){
 		char dchar = cc[j];
 		if (dchar <= '9' && dchar >= '0'){		
-			matches[i] = j--;
+			matches[i] = j;
 			digits[i++] = ctoi(dchar);
 			
-			//once we record at least 14 digits we need to mask
+			// once we record at least 14 digits we need to check luhn alg
+			// and mask accordingly and incrementally
 			if (i >= 14){
-				tmax =  isdeca(digits, i);
-				if (tmax >= max){
-					max = tmax;
-					start_ind = (i - 1);
-					idx = start_ind;
+				temp_max =  looney(digits, i);
+				if (temp_max >= max){
+					max = temp_max;
+					idx = start_ind = (i - 1);
 					while ((start_ind - idx) < max){
 						cc[matches[idx--]] = 'X';
 					}
 				}
 			}
-		} else { j--; } //need to index down even if none number
+		}
+		j--;
 	}
 }
 
 
-int isdeca(int d[], int i)
+/*
+		Iterate through the string detecting digits
+		if 14+ digits are found, see if they pass the Luhn Algorithm
+		if they do, iterate up to a range of 16 (if possible)
+		mask as things are found to match the pattern that way a 1,000 character
+		string that matches the alg tests gets masked entirely in 16 character sets
+*/
+int looney(int d[], int i)
 {
 	int depth = MINSIZE,  max_seq = 0;
 	while (depth <= MAXSIZE && depth <= i) {
-		int sum = 0, iter = i, lower = (i - depth), j = 0;
-		while (iter > lower) {	
-			int num;
-			if ((j % 2) != 0) {
-				num = d[lower] << 1;
-			} else {
-				num = d[lower];
-			}
+		int sum = 0, upper = i, iter = (i - depth), j = 0;
+		while (upper > iter) {	
+			int num;			
 			
-			if (num > 9) {
-				//double digit num
-				int second = num % 10;
-				int first = num / 10;
-				sum += (first + second);			
-			} else {
-				//single digit num
+			if ((j % 2) != 0)
+				num = d[iter] << 1;
+			else
+				num = d[iter];
+			
+			if (num > 9)
+				sum += (1 + (num % 10));			
+			else 
 				sum += num;
-			}
-			lower++;
+				
+			iter++;
 			j++;
 		}
-		if ((sum % 10) == 0) {
+		if ((sum % 10) == 0)
 			max_seq = depth;
-		}
+
 		depth++;
 	}
 	return max_seq;
 }
 
+
+/*
+	Convert single chars to ints
+	-> will work on letters too return thier int equivalent
+*/
 int ctoi(char c)
 {
 	return (c - '0');
