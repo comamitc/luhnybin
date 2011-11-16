@@ -24,7 +24,12 @@ int ctoi(char c);
 int main (void)
 {
 	char str[BUFFER];
-	char c;	
+	char c;
+	int len;
+	/*
+		Wait for the java code to throw us a bone
+		then mask it and give ti back
+	*/
 	while (1){
 		int j = 0;
 		while ((c = getchar()) != '\n'){
@@ -32,7 +37,7 @@ int main (void)
 		}
 		str[j] = '\0';
 
-		int len = strlen(str);
+		len = strlen(str);
 		looney(str, len);
 		printf("%s\n", str);
 		fflush(stdout);
@@ -43,7 +48,7 @@ int main (void)
 
 void looney(char cc[], int len)
 {
-	int j = (len - 1), i = 0, max = 0, start_ind = 0;
+	int j = (len - 1), i = 0, max = 0, start_ind = 0, tmax = 0, idx = 0;
 	int digits[BUFFER];
 	
 	//convert all numbers to ints
@@ -53,18 +58,15 @@ void looney(char cc[], int len)
 			matches[i] = j--;
 			digits[i++] = ctoi(dchar);
 			
-			//once we record at least 14 numbers
+			//once we record at least 14 digits we need to mask
 			if (i >= 14){
-				int tmax;
 				tmax =  isdeca(digits, i);
 				if (tmax >= max){
 					max = tmax;
 					start_ind = (i - 1);
-					if (max > 0){
-						int idx = start_ind;
-						while ((start_ind - idx) < max){
-							cc[matches[idx--]] = 'X';
-						}
+					idx = start_ind;
+					while ((start_ind - idx) < max){
+						cc[matches[idx--]] = 'X';
 					}
 				}
 			}
